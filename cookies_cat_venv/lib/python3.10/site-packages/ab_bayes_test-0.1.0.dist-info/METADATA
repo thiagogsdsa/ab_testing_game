@@ -1,0 +1,26 @@
+Metadata-Version: 2.4
+Name: ab_bayes_test
+Version: 0.1.0
+Summary: Bayesian A/B Testing for proportions and means
+Home-page: https://github.com/thiagogsdsa/ab_bayes_test
+Author: Thiago Guimarães
+Author-email: thiago.guimaraes.sto@gmail.com
+Project-URL: LinkedIn, https://www.linkedin.com/in/thiagogsdsa
+Project-URL: GitHub, https://github.com/thiagogsdsa/ab_bayes_test
+Classifier: Programming Language :: Python :: 3
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Requires-Python: >=3.10
+License-File: LICENSE
+Requires-Dist: numpy>=1.24
+Requires-Dist: scipy>=1.10
+Requires-Dist: pandas>=2.1
+Dynamic: author
+Dynamic: author-email
+Dynamic: classifier
+Dynamic: home-page
+Dynamic: license-file
+Dynamic: project-url
+Dynamic: requires-dist
+Dynamic: requires-python
+Dynamic: summary
