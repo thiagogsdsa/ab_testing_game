@@ -359,27 +359,15 @@ def plot_histogram_single(
     show_mean: bool = True,
     show_median: bool = True,
     color: str = 'skyblue',
+    mean_color: str = 'black',
+    median_color: str = 'red',
+    alpha: float = 0.7,
+    show_legend: bool = True,
     title: str = None,
     xlabel: str = "Value",
     density: bool = True
 ):
-    """
-    Plot clean histogram for a single dataset (e.g., posterior lift distribution).
-
-    Args:
-        data (array-like): Samples to plot
-        bins (int): Number of histogram bins (-1 = auto)
-        figsize (tuple): Figure size
-        show_mean (bool): Draw vertical line for mean
-        show_median (bool): Draw vertical line for median
-        color (str): Histogram color
-        title (str): Plot title
-        xlabel (str): X-axis label
-        density (bool): Normalize to density if True
-    """
-    import numpy as np
-    import matplotlib.pyplot as plt
-
+ 
     data = np.asarray(data)
     data = data[np.isfinite(data)]
 
@@ -395,25 +383,27 @@ def plot_histogram_single(
 
     # --- Plot ---
     fig, ax = plt.subplots(figsize=figsize)
-    ax.hist(data, bins=bins, color=color, alpha=0.7, density=density)
+    ax.hist(data, bins=bins, color=color, alpha=alpha, density=density)
 
     if show_mean:
-        ax.axvline(data.mean(), color='k', linestyle='--', label=f"Mean = {data.mean():.4f}")
+        ax.axvline(data.mean(), color=mean_color, linestyle='--', label=f"Mean = {data.mean():.3f}")
     if show_median:
-        ax.axvline(np.median(data), color='r', linestyle=':', label=f"Median = {np.median(data):.4f}")
+        ax.axvline(np.median(data), color=median_color, linestyle=':', label=f"Median = {np.median(data):.3f}")
 
     ax.set_xlabel(xlabel)
     ax.set_ylabel("Density" if density else "Frequency")
 
     if title:
-        ax.set_title(title, fontsize=14, fontweight='bold')
+        ax.set_title(title)
+
+    if show_legend:
+        ax.legend(frameon=False)
 
     # --- Clean axes ---
-    ax.legend(frameon=False)
     for spine in ax.spines.values():
         spine.set_visible(False)
     ax.grid(False)
-    
+
     plt.tight_layout()
     plt.show()
 
@@ -521,7 +511,10 @@ def categorical_distribution_groups(
     group_titles: Optional[Tuple[str, str]] = None,
     global_normalize: bool = False,
     normalize_within_group : bool= False,
-    order_by_group: Optional[str] = None
+    order_by_group: Optional[str] = None,
+    top: float = 0.9,
+    hspace: float = 0.8,
+    wspace: float = 0.4,
 ) -> None:
     """
     Generates side-by-side bar plots for categorical variables, separated by a binary target.
@@ -684,12 +677,11 @@ def categorical_distribution_groups(
     )
             
     plt.subplots_adjust(
-    #top=0.9,    
     hspace=1,  
    
 )
 
-    plt.subplots_adjust(top=0.92, hspace=0.4, wspace=0.4)
+    plt.subplots_adjust(top=top, hspace= hspace, wspace=wspace)
     plt.show()
 
 
