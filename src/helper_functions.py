@@ -1,10 +1,13 @@
+import os
 import pandas as pd
 import numpy as np
+import seaborn as sns
 import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
 from matplotlib.patches import Patch
+from scipy.stats import gaussian_kde
 from typing import List, Optional, Tuple
-import seaborn as sns
+from IPython.display import display, HTML
 
 # ==============================
 # Summarize DataFrame
@@ -119,7 +122,9 @@ def boxplot_outliers_groups(df, column, label_col,
                             outlier_color='red', group_colors=None,
                             title=None, percentile_filter=(1, 99),
                             show_mean=True, figsize=(12, 6),
-                            show_y_axis=True, width_ratios=[1, 2, 4]):
+                            show_y_axis=True, width_ratios=[1, 2, 4],
+                            path_to_save = None 
+                            ):
     """
     Plot a single row: bar chart, pie chart, horizontal boxplot
     - Bar chart: % of each group that are global outliers
@@ -207,6 +212,11 @@ def boxplot_outliers_groups(df, column, label_col,
     plt.tight_layout()
     plt.show()
 
+    if path_to_save:
+        plt.savefig(path_to_save, bbox_inches="tight")
+    plt.close()
+
+
 # ==============================
 # Histogram by Groups
 # ==============================
@@ -216,7 +226,9 @@ def histogram_groups(df, column, label_col,
                      percentile_filter=(1, 99),
                      show_mean=True, show_median=True,
                      bins=30, figsize=(15, 5),
-                     title=None):
+                     title=None,
+                     path_to_save = None
+                     ):
     """
     Plot histograms:
     - All data (filtered distribution, but statistics from full df).
@@ -346,6 +358,9 @@ def histogram_groups(df, column, label_col,
 
     plt.tight_layout()
     plt.show()
+    if path_to_save:
+        plt.savefig(path_to_save, bbox_inches="tight")
+    plt.close()
 
 
 # ==============================
@@ -358,14 +373,15 @@ def plot_histogram_single(
     figsize: tuple = (8, 5),
     show_mean: bool = True,
     show_median: bool = True,
-    color: str = 'skyblue',
+    color: str = 'palegreen',
     mean_color: str = 'black',
     median_color: str = 'red',
     alpha: float = 0.7,
     show_legend: bool = True,
     title: str = None,
     xlabel: str = "Value",
-    density: bool = True
+    density: bool = True,
+    path_to_save  = None 
 ):
  
     data = np.asarray(data)
@@ -406,6 +422,10 @@ def plot_histogram_single(
 
     plt.tight_layout()
     plt.show()
+    if path_to_save:
+        plt.savefig(path_to_save, bbox_inches="tight")
+    plt.close()
+
 
 # ==============================
 # Histogram data1 vs data2 
@@ -419,7 +439,8 @@ def plot_histograms_data_1vsdata_2(
     show_mean: bool = True,
     show_median: bool = True,
     colors: list = None,
-    title: str = None
+    title: str = None,
+    path_to_save = None 
 ):
     """
     Plot clean histograms for multiple sample groups (e.g. posterior distributions).
@@ -498,6 +519,110 @@ def plot_histograms_data_1vsdata_2(
         fig.suptitle(title, fontsize=15, fontweight='bold')
     plt.tight_layout()
     plt.show()
+    if path_to_save:
+        plt.savefig(path_to_save, bbox_inches="tight")
+    plt.close()
+
+# ==============================
+# KDE data1 vs data2 
+# ==============================
+
+
+def plot_kde_data1vsdata_2_same_plot(
+    samples_dict_or_df,
+    group_names: list = None,
+    figsize: tuple = (12, 5),
+    show_mean: bool = True,
+    show_median: bool = True,
+    colors: list = None,
+    title: str = None,
+    path_to_save=None,
+    fill_alpha: float = 0.25,
+    linewidth: float = 2.0
+):
+    """
+    Plot KDE (smoothed density) curves for multiple sample groups on the same plot.
+    Useful to visualize shifts between posterior or empirical distributions.
+
+    Args:
+        samples_dict_or_df (dict or pd.DataFrame): 
+            - dict: {'group_label': np.array(samples)}
+            - DataFrame: each column is a group
+        group_names (list): Optional list of groups to plot (order preserved)
+        figsize (tuple): Figure size
+        show_mean (bool): Draw vertical line for mean
+        show_median (bool): Draw vertical line for median
+        colors (list): Custom colors per group
+        title (str): Overall figure title
+        path_to_save (str): Optional path to save figure
+        fill_alpha (float): Transparency for KDE fill
+        linewidth (float): Line width for KDE curves
+    """
+
+    # --- Normalize input ---
+    if isinstance(samples_dict_or_df, pd.DataFrame):
+        samples_dict = {col: samples_dict_or_df[col].dropna().values 
+                        for col in samples_dict_or_df.columns}
+    elif isinstance(samples_dict_or_df, dict):
+        samples_dict = {k: np.asarray(v) for k, v in samples_dict_or_df.items()}
+    else:
+        raise TypeError("Input must be a dict or DataFrame.")
+
+    # --- Groups ---
+    if group_names is None:
+        group_names = list(samples_dict.keys())
+    n_groups = len(group_names)
+
+    if n_groups < 2:
+        raise ValueError("At least two groups are required for same-plot comparison.")
+
+    # --- Colors ---
+    if colors is None:
+        default_colors = ['skyblue', 'salmon', 'lightgreen', 'orange', 'violet']
+        colors = default_colors[:n_groups]
+
+    # --- Plot ---
+    fig, ax = plt.subplots(figsize=figsize)
+    
+    for g, c in zip(group_names, colors):
+        data = np.asarray(samples_dict[g])
+        if len(data) < 2:
+            continue
+
+        # KDE curve
+        density = gaussian_kde(data)
+        xs = np.linspace(data.min(), data.max(), 400)
+        ys = density(xs)
+
+        ax.plot(xs, ys, color=c, lw=linewidth, label=str(g))
+        ax.fill_between(xs, ys, alpha=fill_alpha, color=c)
+
+        if show_mean:
+            ax.axvline(data.mean(), color=c, linestyle='--', lw=1.5)
+        if show_median:
+            ax.axvline(np.median(data), color=c, linestyle=':', lw=1.2)
+
+    # --- Aesthetic setup ---
+    ax.set_xlabel("Value")
+    ax.set_ylabel("Density")
+    ax.legend(frameon=False)
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+    ax.spines['left'].set_visible(False)
+    ax.spines['bottom'].set_visible(False)
+    ax.grid(False)
+
+    if title:
+        fig.suptitle(title, fontsize=15, fontweight='bold')
+
+    plt.tight_layout()
+    plt.show()
+
+    if path_to_save:
+        os.makedirs(os.path.dirname(path_to_save), exist_ok=True)
+        plt.savefig(path_to_save, bbox_inches="tight")
+
+    plt.close()
 
 # ==============================
 # Categorical Distribution by Groups
@@ -515,6 +640,7 @@ def categorical_distribution_groups(
     top: float = 0.9,
     hspace: float = 0.8,
     wspace: float = 0.4,
+    remove_xaxis_line : bool = True 
 ) -> None:
     """
     Generates side-by-side bar plots for categorical variables, separated by a binary target.
@@ -632,6 +758,11 @@ def categorical_distribution_groups(
             ax.grid(False)
             sns.despine(ax=ax, left=True, bottom=False)
             ax.set_xlabel("")
+
+            if remove_xaxis_line:
+                ax.spines['bottom'].set_visible(False)  
+            else:
+                ax.spines['bottom'].set_visible(True)
             
             if not data.empty:
                 for p in ax.patches:
@@ -647,13 +778,12 @@ def categorical_distribution_groups(
         plot_and_clean_ax(axes[i, 0], data_0, group_titles[0], "Blues_d")
         plot_and_clean_ax(axes[i, 1], data_1, group_titles[1], "Reds_d")
 
-
-       # --- Feature title ---
+        # --- Feature title ---
         main_title = f"CATEGORICAL FEATURE: {col}"
 
         # Use axes position dynamically to place title above the row
         row_top = axes[i, 0].get_position().y1  # top of the first axis in the row
-        y_offset = 0.05 # small offset above the top of the subplot
+        y_offset = 0.05  # small offset above the top of the subplot
         fig.text(
             0.5,                     # center horizontally
             row_top + y_offset,      # just above the row
@@ -674,16 +804,9 @@ def categorical_distribution_groups(
                 va='bottom',
                 fontsize=12,
                 color='gray'
-    )
-            
-    plt.subplots_adjust(
-    hspace=1,  
-   
-)
+            )
 
-    plt.subplots_adjust(top=top, hspace= hspace, wspace=wspace)
-    plt.show()
-
+        plt.subplots_adjust(top=top, hspace=hspace, wspace=wspace)
 
 # ==============================
 #  Business Performance
@@ -691,32 +814,38 @@ def categorical_distribution_groups(
 
 def simulate_profit_posterior(
     posterior_samples,
+    posterior_summary,
     initial_players,
     ltv_per_player=3,
     bins=50,
     figsize=(6,4),
     colors=None,
-    ci=0.95,
     show_plot=True,
-    title=None
+    title=None,
+    path_to_save=None
 ):
+    """
+    Visualize profit posteriors given precomputed posterior summaries (means and CIs).
+    """
 
+    # --- Convert expected profit ---
     profit_dict = {
         gate: samples * initial_players * ltv_per_player
         for gate, samples in posterior_samples.items()
     }
 
-    # --- Summary table ---
-    alpha = (1 - ci) / 2
-    summary = {
+    # --- Convert summary to profit scale ---
+    profit_summary = {
         gate: {
-            'mean': np.mean(samples),
-            'std': np.std(samples),
-            f'ci_lower': np.percentile(samples, alpha*100),
-            f'ci_upper': np.percentile(samples, (1-alpha)*100)
-        } for gate, samples in profit_dict.items()
+            "mean": stats["mean"] * initial_players * ltv_per_player,
+            "std": stats["std"] * initial_players * ltv_per_player,
+            "ci_lower": stats["ci_lower"] * initial_players * ltv_per_player,
+            "ci_upper": stats["ci_upper"] * initial_players * ltv_per_player,
+        }
+        for gate, stats in posterior_summary.items()
     }
-    summary_df = pd.DataFrame(summary)
+
+    summary_df = pd.DataFrame(profit_summary)
 
     # --- Plot ---
     if show_plot:
@@ -729,25 +858,65 @@ def simulate_profit_posterior(
             axes = [axes]
 
         for ax, (gate, samples), c in zip(axes, profit_dict.items(), colors):
-            ax.hist(samples, bins=bins, density=True, alpha=0.7, color=c)
-            mean_val = np.mean(samples)
-            ci_low = np.percentile(samples, alpha*100)
-            ci_high = np.percentile(samples, (1-alpha)*100)
-            
+            n = len(samples)
+            nbins = int(np.floor(np.log2(n) + 1)) if bins == -1 else bins
+
+            stats = profit_summary[gate]
+            mean_val = stats["mean"]
+            ci_low = stats["ci_lower"]
+            ci_high = stats["ci_upper"]
+
+            ax.hist(samples, bins=nbins, density=True, alpha=0.7, color=c)
             ax.axvline(mean_val, color='k', linestyle='--', label=f"Mean: ${mean_val:,.0f}")
-            ax.axvline(ci_low, color='r', linestyle=':', label=f"{int(ci*100)}% CI")
+            ax.axvline(ci_low, color='r', linestyle=':', label=f"95% CI: ${ci_low:,.0f}–${ci_high:,.0f}")
             ax.axvline(ci_high, color='r', linestyle=':')
             ax.set_title(gate)
             ax.set_xlabel("Profit ($)")
             ax.set_yticks([])
-            ax.legend(frameon=False)
-            ax.spines['top'].set_visible(False)
-            ax.spines['right'].set_visible(False)
-            ax.spines['left'].set_visible(False)
-            ax.spines['bottom'].set_visible(False)
+            ax.legend(frameon=False, fontsize=9)
+            for spine in ax.spines.values():
+                spine.set_visible(False)
+
         if title:
             fig.suptitle(title, fontsize=16, fontweight='bold')
+
         plt.tight_layout()
+
+        if path_to_save:
+            os.makedirs(os.path.dirname(path_to_save), exist_ok=True)
+            plt.savefig(path_to_save, bbox_inches="tight")
+
         plt.show()
+        plt.close()
 
     return summary_df
+
+# ==============================
+#  Display Recommendation
+# ==============================
+
+def display_recommendation(text: str, bg_color: str = "#E76F51", text_color: str = "white", max_width: int = 500):
+    """
+    Display a recommendation box in Jupyter Notebook.
+    
+    Args:
+        text (str): Recommendation text (HTML allowed, ex: <b>…</b>).
+        bg_color (str): Background color of the box.
+        text_color (str): Text color.
+        max_width (int): Max width of the box in pixels.
+    """
+    html = f"""
+    <div style="
+        background-color:{bg_color};
+        color:{text_color};
+        padding:12px;
+        border-radius:5px;
+        max-width:{max_width}px;
+        margin: 10px auto;
+        text-align: center;
+        font-weight:bold;
+    ">
+        {text}
+    </div>
+    """
+    display(HTML(html))
