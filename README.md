@@ -93,7 +93,7 @@ $$
 
 ## Step 3: Model (Procedure / IPR)
 
-![IPR Solution](imgs/IPR_method_4.png)
+![IPR Solution](imgs/ipr_method_4.png)
 
 > Reference: [https://medium.com/@thiago.guimaraes.sto/thinking-about-data-science-structurally-the-quadruple-d-h-m-s-781eee1af2ff](https://medium.com/@thiago.guimaraes.sto/thinking-about-data-science-structurally-the-quadruple-d-h-m-s-781eee1af2ff)
 
