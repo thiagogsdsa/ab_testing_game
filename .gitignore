@@ -11,6 +11,7 @@
 !export_to_html/
 !notebooks/
 !imgs/
+!imgs/**
 !src/
 !pdf_powerpoint/
 !pdf_powerpoint/**
