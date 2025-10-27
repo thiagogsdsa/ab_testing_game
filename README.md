@@ -52,39 +52,38 @@ The goal is to **analyze A/B test results using a Bayesian framework** and provi
   - Retention (Day 1, Day 7)
   - Total game rounds played
 
-### Data Quality Checks
+### EDA and Data Quality Checks 
 
 - Missing values and outliers
-- Group balance (number of players per group, demographic/segment distribution)
-- Time coverage alignment
+- Distributions 
 
----
 
 ## Step 2: Explore (Analysis Plan)
 
 ### Objective
 
-Measure impact of moving the first gate on retention, engagement, and monetization using a **Bayesian A/B testing approach**.
+Measure impact of moving the first gate on retention, engagement (Total Rounds), and business performance using a **Bayesian A/B testing approach**.
 
-### Scope
-
-- Only players reaching level 30
-- Test duration = X weeks
-- Aggregated metrics per player
-- Bayesian posterior analysis for retention and revenue
-
-### Hypotheses
-
-- H1: Moving the gate increases Day 7 retention
-- H2: Moving the gate affects average session duration
-- H3: Moving the gate changes in-app purchase behavior
-
-### Analysis Methods
-
-- **Bayesian posterior estimation** for proportion metrics (retention rates)
-- Credible intervals for engagement and revenue differences
-- Probability of improvement: $(\text{Prob}(\text{experiment > control}) $
-- Visualization: posterior distributions, credible intervals, probability of lift
+- Gate 30 = Control Group
+- Gate 40 = Treatment Group
+- Parameter of Interest: Retention probability (proporttion) and Total Rounds (mean) in each group: 
+$
+\theta_{control}, \theta_{treatment}
+$
+- Prior: $\theta_i \sim \text{Beta}(1,1)$ (non-informative prior)
+- Likelihood: 
+$$
+Retention_i \sim \text{Binomial}(n_i, \theta_i), \quad i \in \{control, treatment\}
+$$
+- Posterior: Compute 
+$$
+\text{Prob}(\theta_{control} | data) \text{ and } \text{Prob}(\theta_{treatment} | data)
+$$
+- Decision Rule: 
+$$
+\text{Prob}(\theta_{treatment} > \theta_{control})
+$$
+- Credible Level: e.g., 0.95 for the posterior probability 
 
 
 ## Step 3: Model (Procedure / IPR)
@@ -93,57 +92,108 @@ Measure impact of moving the first gate on retention, engagement, and monetizati
 
 > Reference: [https://medium.com/@thiago.guimaraes.sto/thinking-about-data-science-structurally-the-quadruple-d-h-m-s-781eee1af2ff](https://medium.com/@thiago.guimaraes.sto/thinking-about-data-science-structurally-the-quadruple-d-h-m-s-781eee1af2ff)
 
-### INPUT
 
+**Input:**
 - Business problem and hypotheses
 - A/B test dataset (control vs experiment)
-- Metrics of interest: retention, engagement, revenue
+- Metrics of interest: retention
 - Prior assumptions for Bayesian models (weakly informative or historical priors)
 
-### PROCEDURE
-
+**Procedure:**
 - Clean and prepare dataset
 - Validate random assignment of players
-- Fit Bayesian models for retention, engagement, and revenue metrics:
+- Fit Bayesian models for retention and engagement
   - Retention: Beta-Binomial model
   - Engagement/revenue: Normal or log-Normal model
 - Compute posterior distributions and credible intervals
 - Calculate probability of improvement for each metric
 - Visualize posteriors, credible intervals, and probability of lift
 
-### RESULT
-
+**Result:**
 - Posterior distributions for retention, engagement, and revenue
 - Probability that moving the gate increases retention or revenue
 - Credible intervals for metric differences
 - Recommendations for gate placement based on Bayesian evidence
 
+## Step 4: Interpret (Evaluation & Reporting)
 
-## Step 4: iNterpret (Evaluation & Reporting)
+- **Summarize results:**
+  - Posterior estimates for retention, Total Rounds 
+  - Probability of improvement (lift) for each metric
+  - 95% credible intervals for differences between control and treatment groups
 
-- Summarize results:
-  - Posterior estimates for retention, engagement, revenue
-  - Probability of improvement
-  - Credible intervals for metric differences
-- Recommendations:
-  - Move gate to level 40 if Bayesian probability of lift > threshold
-- Deliverable:
-  - PDF report with charts, tables, and narrative insights
+- **Recommendations:**
+  - Move the gate to level 40 if the Bayesian probability of lift exceeds the threshold of 95%
 
-## Business Problem
+- **Business Performance:**
+- Use the posterior lift distribution (with credible intervals) to estimate the potential revenue impact for the company, based on the monetization rules described in the Business Understanding section (e.g., revenue per retained player from IAPs and ads).
 
-Cookie Cats is a hugely popular mobile puzzle game developed by Tactile Entertainment. It's a classic "connect three" style puzzle game where the player must connect tiles of the same color in order to clear the board and win the level. It also features singing cats. We're not kidding!
+- **Deliverable:**
+  - PDF containing presentations of the test: one from **PowerPoint** and another from **Beamer (LaTeX)**. See the report folder.
+  - HTML report of the entire **Jupyter notebook**. Execute the shell script in the export_to_hmtl folder to  generate it. 
 
-As players progress through the game they will encounter gates that force them to wait some time before they can progress or make an in-app purchase. In this project, we will analyze the result of an A/B test where the first gate in Cookie Cats was moved from level 30 to level 40. In particular, we will analyze the impact on player retention.
+#  Bayesian A/B Test Results
 
-## Data
+## Result 
+The analysis indicates a **low probability of improvement** for retention metrics (Day 1 and Day 7) and engagement (Total Rounds).  
+Therefore, there is **no strong statistical evidence** that the treatment version outperforms the control.
 
-| Column Name    | Description                                                                                                                        |
-| -------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
-| userid         | A unique number that identifies each player.                                                                                       |
-| version        | Whether the player was put in the control group (gate_30 - a gate at level 30) or the test group (gate_40 - a gate at level 40). |
-| sum_gamerounds | The number of game rounds played by the player during the first week after installation.                                           |
-| retention_1    | Did the player come back and play 1 day after installing?                                                                          |
-| retention_7    | Did the player come back and play 7 days after installing?                                                                         |
+**Recommendation:**  
+
+Keep **Gate 30 (Control)** as the active version and **continue monitoring performance** over the next cycles.
+
+
+## Business Performance
+We also projected the **expected business performance** based on the **posterior distribution of Day 7 retention**, as shown below:
+
+![Posterior Distribution Projection](imgs/final_slide_0.png)
+
+## Additional Material
+
+For a complete view of the project:
+
+- See the folders **`pdf_powerpoint`** and **`pdf_beamer`**, which contain the presentation of the test generated from PowerPoint and Beamer (LaTeX).
+- The full pipeline that generates those PDF files is located in the **`report`** folder.
+
+Furthermore, if you wish to view all the development and analysis, I **highly recommend** opening the URL generated by the shell script (see folder **`convert_to_html/`**).
+
+[View the entire notebook on html](https://thiagogsdsa.github.io/ab_testing_game/)
+
+
+# Project Placeholders
+
+![Folders](imgs/folders.png)
+
+# Tools and Framework
+
+The project was guided using the **OSEMN methodology**, with the sections and actions outlined above.  
+
+It was developed following a **Bayesian framework**. I created a class to perform Bayesian A/B tests, which is published on PyPI. By installing it with `pip`, it was possible to run the tests in this project.  
+
+You can check it out here: [ab_bayes_test GitHub](https://github.com/thiagogsdsa/ab_bayes_test)
+
+Before applying the test, we performed an **EDA**. At the initial stage, we encountered approximately **11% outliers** in the variable `Total Rounds`. Instead of excluding them, we applied **Box-Cox** and **log+1 transformations**, reducing the outliers to almost zero.  
+
+We removed **4% of the data**, corresponding to users with zero engagement.  
+No missing values were found in the dataset.
+
+# Lessons Learned
+
+I learned how to build a **Bayesian A/B testing class from scratch** and apply it to a project with business impact.  
+The math and statistics behind Bayesian A/B testing are heavier than the frequentist approach, but it is more **straightforward**, requiring fewer steps and offering **intuitive probabilities** instead of hypothesis testing.
+ 
+# Improvements
+
+I tried to code as cleanly as possible to avoid bugs.  
+I am not entirely sure if the approach used in the report (see the script) is the optimal solution, so if you have any suggestions, please **reach out to me via the contacts below**. I would love to receive feedback! 
+
+# Contact
+- **E-mail:** thiago.guimaraes.sto@gmail.com  
+- **LinkedIn:** thiagogsdsa
+
+
+
+
+
 
 

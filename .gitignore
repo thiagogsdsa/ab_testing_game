@@ -3,6 +3,7 @@
 */
 
 # Allow these specific files and folders
+# Allow these specific files and folders
 !.gitignore
 !README.md
 !requirements.txt
@@ -11,10 +12,12 @@
 !notebooks/
 !imgs/
 !src/
-!report/
-!powerpoint/
-!pdf_beamer/
 !pdf_powerpoint/
+!pdf_powerpoint/**
+!powerpoint/
+!powerpoint/**
+!report/
+!report/**
 
 #Ignore temporary or cache files even inside allowed folders
 __pycache__/
