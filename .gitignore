@@ -1,28 +1,21 @@
-# Ignore everything by default
-*
-*/
-
-# Allow these specific files and folders
-# Allow these specific files and folders
-!.gitignore
-!README.md
-!requirements.txt
-!index.html
-!export_to_html/
-!notebooks/
-!imgs/
-!imgs/**
-!src/
-!pdf_powerpoint/
-!pdf_powerpoint/**
-!powerpoint/
-!powerpoint/**
-!report/
-!report/**
-
-#Ignore temporary or cache files even inside allowed folders
+# Python cache and temp files
 __pycache__/
 *.pyc
 *.pyo
+
+# Jupyter Notebook checkpoints
 .ipynb_checkpoints/
+
+# macOS system files
 *.DS_Store
+
+# Virtual environment folder
+cookies_cat_venv/
+
+slides/ 
+
+data/
+
+# Optional: logs or temp files
+*.log
+*.tmp
