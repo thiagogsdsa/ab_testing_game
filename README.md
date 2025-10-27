@@ -40,7 +40,6 @@ The first gate has been moved from **level 30 to level 40**. Tactile Entertainme
 
 The goal is to **analyze A/B test results using a Bayesian framework** and provide clear recommendations for game design.
 
-
 ## Step 1: Scrub (Data Understanding)
 
 ### Data Description
@@ -52,11 +51,10 @@ The goal is to **analyze A/B test results using a Bayesian framework** and provi
   - Retention (Day 1, Day 7)
   - Total game rounds played
 
-### EDA and Data Quality Checks 
+### EDA and Data Quality Checks
 
 - Missing values and outliers
-- Distributions 
-
+- Distributions
 
 ## Step 2: Explore (Analysis Plan)
 
@@ -66,25 +64,32 @@ Measure impact of moving the first gate on retention, engagement (Total Rounds),
 
 - Gate 30 = Control Group
 - Gate 40 = Treatment Group
-- Parameter of Interest: Retention probability (proporttion) and Total Rounds (mean) in each group: 
-$
+- Parameter of Interest: Retention probability (proporttion) and Total Rounds (mean) in each group:
+
+$$
 \theta_{control}, \theta_{treatment}
-$
+$$
+
 - Prior: $\theta_i \sim \text{Beta}(1,1)$ (non-informative prior)
-- Likelihood: 
+- Likelihood:
+
 $$
 Retention_i \sim \text{Binomial}(n_i, \theta_i), \quad i \in \{control, treatment\}
 $$
-- Posterior: Compute 
+
+- Posterior: Compute
+
 $$
 \text{Prob}(\theta_{control} | data) \text{ and } \text{Prob}(\theta_{treatment} | data)
 $$
-- Decision Rule: 
+
+- Decision Rule:
+
 $$
 \text{Prob}(\theta_{treatment} > \theta_{control})
 $$
-- Credible Level: e.g., 0.95 for the posterior probability 
 
+- Credible Level: e.g., 0.95 for the posterior probability
 
 ## Step 3: Model (Procedure / IPR)
 
@@ -92,14 +97,15 @@ $$
 
 > Reference: [https://medium.com/@thiago.guimaraes.sto/thinking-about-data-science-structurally-the-quadruple-d-h-m-s-781eee1af2ff](https://medium.com/@thiago.guimaraes.sto/thinking-about-data-science-structurally-the-quadruple-d-h-m-s-781eee1af2ff)
 
-
 **Input:**
+
 - Business problem and hypotheses
 - A/B test dataset (control vs experiment)
 - Metrics of interest: retention
 - Prior assumptions for Bayesian models (weakly informative or historical priors)
 
 **Procedure:**
+
 - Clean and prepare dataset
 - Validate random assignment of players
 - Fit Bayesian models for retention and engagement
@@ -110,6 +116,7 @@ $$
 - Visualize posteriors, credible intervals, and probability of lift
 
 **Result:**
+
 - Posterior distributions for retention, engagement, and revenue
 - Probability that moving the gate increases retention or revenue
 - Credible intervals for metric differences
@@ -118,32 +125,31 @@ $$
 ## Step 4: Interpret (Evaluation & Reporting)
 
 - **Summarize results:**
-  - Posterior estimates for retention, Total Rounds 
+
+  - Posterior estimates for retention, Total Rounds
   - Probability of improvement (lift) for each metric
   - 95% credible intervals for differences between control and treatment groups
-
 - **Recommendations:**
-  - Move the gate to level 40 if the Bayesian probability of lift exceeds the threshold of 95%
 
+  - Move the gate to level 40 if the Bayesian probability of lift exceeds the threshold of 95%
 - **Business Performance:**
 - Use the posterior lift distribution (with credible intervals) to estimate the potential revenue impact for the company, based on the monetization rules described in the Business Understanding section (e.g., revenue per retained player from IAPs and ads).
-
 - **Deliverable:**
+
   - PDF containing presentations of the test: one from **PowerPoint** and another from **Beamer (LaTeX)**. See the report folder.
-  - HTML report of the entire **Jupyter notebook**. Execute the shell script in the export_to_hmtl folder to  generate it. 
+  - HTML report of the entire **Jupyter notebook**. Execute the shell script in the export_to_hmtl folder to  generate it.
 
-#  Bayesian A/B Test Results
+# Bayesian A/B Test Results
 
-## Result 
-The analysis indicates a **low probability of improvement** for retention metrics (Day 1 and Day 7) and engagement (Total Rounds).  
+The analysis indicates a **low probability of improvement** for retention metrics (Day 1 and Day 7) and engagement (Total Rounds).
 Therefore, there is **no strong statistical evidence** that the treatment version outperforms the control.
 
-**Recommendation:**  
+## **Recommendation:**
 
 Keep **Gate 30 (Control)** as the active version and **continue monitoring performance** over the next cycles.
 
-
 ## Business Performance
+
 We also projected the **expected business performance** based on the **posterior distribution of Day 7 retention**, as shown below:
 
 ![Posterior Distribution Projection](imgs/final_slide_0.png)
@@ -159,41 +165,34 @@ Furthermore, if you wish to view all the development and analysis, I **highly re
 
 [View the entire notebook on html](https://thiagogsdsa.github.io/ab_testing_game/)
 
-
 # Project Placeholders
 
 ![Folders](imgs/folders.png)
 
 # Tools and Framework
 
-The project was guided using the **OSEMN methodology**, with the sections and actions outlined above.  
+The project was guided using the **OSEMN methodology**, with the sections and actions outlined above.
 
-It was developed following a **Bayesian framework**. I created a class to perform Bayesian A/B tests, which is published on PyPI. By installing it with `pip`, it was possible to run the tests in this project.  
+It was developed following a **Bayesian framework**. I created a class to perform Bayesian A/B tests, which is published on PyPI. By installing it with `pip`, it was possible to run the tests in this project.
 
 You can check it out here: [ab_bayes_test GitHub](https://github.com/thiagogsdsa/ab_bayes_test)
 
-Before applying the test, we performed an **EDA**. At the initial stage, we encountered approximately **11% outliers** in the variable `Total Rounds`. Instead of excluding them, we applied **Box-Cox** and **log+1 transformations**, reducing the outliers to almost zero.  
+Before applying the test, we performed an **EDA**. At the initial stage, we encountered approximately **11% outliers** in the variable `Total Rounds`. Instead of excluding them, we applied **Box-Cox** and **log+1 transformations**, reducing the outliers to almost zero.
 
-We removed **4% of the data**, corresponding to users with zero engagement.  
+We removed **4% of the data**, corresponding to users with zero engagement.
 No missing values were found in the dataset.
 
 # Lessons Learned
 
-I learned how to build a **Bayesian A/B testing class from scratch** and apply it to a project with business impact.  
+I learned how to build a **Bayesian A/B testing class from scratch** and apply it to a project with business impact.
 The math and statistics behind Bayesian A/B testing are heavier than the frequentist approach, but it is more **straightforward**, requiring fewer steps and offering **intuitive probabilities** instead of hypothesis testing.
- 
+
 # Improvements
 
-I tried to code as cleanly as possible to avoid bugs.  
-I am not entirely sure if the approach used in the report (see the script) is the optimal solution, so if you have any suggestions, please **reach out to me via the contacts below**. I would love to receive feedback! 
+I tried to code as cleanly as possible to avoid bugs.
+I am not entirely sure if the approach used in the report (see the script) is the optimal solution, so if you have any suggestions, please **reach out to me via the contacts below**. I would love to receive feedback!
 
 # Contact
-- **E-mail:** thiago.guimaraes.sto@gmail.com  
+
+- **E-mail:** thiago.guimaraes.sto@gmail.com
 - **LinkedIn:** thiagogsdsa
-
-
-
-
-
-
-
